@@ -19,5 +19,5 @@
 // and interrupt handlers correctly. It will also handle creating the `Gba` struct for you.
 #[agb::entry]
 fn entry(mut gba: agb::Gba) -> ! {
-    return snake_gba::main(gba);
+    snake_gba::main(gba);
 }

@@ -1,5 +1,6 @@
 use agb::fixnum::Vector2D;
 use agb::input::{Button, ButtonController};
+use agb::println;
 use alloc::collections::VecDeque;
 
 use self::snake::Snake;
@@ -8,8 +9,9 @@ mod snake;
 
 const MAP_WIDTH: u8 = 30;
 const MAP_HEIGHT: u8 = 20;
+const TILE_SIZE: u8 = 8;
 
-#[derive(PartialEq, Eq, Clone)]
+#[derive(PartialEq, Eq, Clone, Debug)]
 pub enum Direction {
     UP,
     DOWN,
@@ -17,16 +19,17 @@ pub enum Direction {
     RIGHT,
 }
 
+#[derive(Debug)]
 pub struct PositionDirection {
     direction: Direction,
-    position: Vector2D<u8>
+    position: Vector2D<u8>,
 }
 
 impl PositionDirection {
     pub fn new(direction: Direction, position: Vector2D<u8>) -> Self {
         Self {
             direction,
-            position
+            position,
         }
     }
 }
@@ -34,6 +37,7 @@ impl PositionDirection {
 pub struct Game {
     pub directions: VecDeque<PositionDirection>,
     pub snake: Snake,
+    pub current_timer: i32,
 }
 
 impl Game {
@@ -43,23 +47,46 @@ impl Game {
         Self {
             directions: VecDeque::new(),
             snake: Snake::new(Direction::RIGHT, start_position), // TODO: random
+            current_timer: -1,
         }
     }
 
-    pub fn update(&mut self, input: &ButtonController) {
+    pub fn update(&mut self, input: &ButtonController, timer: i32) {
+        let delta_time = timer - self.current_timer;
+
+        let current_position = self.snake.get_position();
         let direction = self.input_to_direction(&input);
-        self.add_direction_on_map(direction, Vector2D::new(0, 0)); // TODO: get real current position
+        self.add_direction_on_map(direction.clone(), current_position.clone());
+
+        if let Some(i) = direction {
+            self.snake.direction = i.clone();
+        }
+        if delta_time > 30 { // 30 FPS = 0.5 sec
+            self.snake.update(&self.directions);
+        }
+        self.snake.render();
+
+        if delta_time > 30 {
+            self.current_timer = timer;
+        }
     }
 
-    fn add_direction_on_map(&mut self, direction: Option<Direction>, position: Vector2D<u8>) {
+    fn add_direction_on_map(
+        &mut self,
+        direction: Option<Direction>,
+        position: Vector2D<u8>,
+    ) {
         if let Some(i) = direction {
             match self.directions.front() {
                 Some(dir) => {
                     if dir.direction != i {
-                        self.directions.push_front(PositionDirection::new(i, position))
+                        self.directions
+                            .push_front(PositionDirection::new(i, position))
                     }
                 }
-                None => self.directions.push_front(PositionDirection::new(i, position)),
+                None => self
+                    .directions
+                    .push_front(PositionDirection::new(i, position)),
             }
         }
     }
