@@ -17,8 +17,22 @@ pub enum Direction {
     RIGHT,
 }
 
+pub struct PositionDirection {
+    direction: Direction,
+    position: Vector2D<u8>
+}
+
+impl PositionDirection {
+    pub fn new(direction: Direction, position: Vector2D<u8>) -> Self {
+        Self {
+            direction,
+            position
+        }
+    }
+}
+
 pub struct Game {
-    pub directions: VecDeque<Direction>,
+    pub directions: VecDeque<PositionDirection>,
     pub snake: Snake,
 }
 
@@ -34,18 +48,18 @@ impl Game {
 
     pub fn update(&mut self, input: &ButtonController) {
         let direction = self.input_to_direction(&input);
-        self.add_direction_on_map(direction);
+        self.add_direction_on_map(direction, Vector2D::new(0, 0)); // TODO: get real current position
     }
 
-    fn add_direction_on_map(&mut self, direction: Option<Direction>) {
+    fn add_direction_on_map(&mut self, direction: Option<Direction>, position: Vector2D<u8>) {
         if let Some(i) = direction {
             match self.directions.front() {
                 Some(dir) => {
-                    if dir != &i {
-                        self.directions.push_front(i)
+                    if dir.direction != i {
+                        self.directions.push_front(PositionDirection::new(i, position))
                     }
                 }
-                None => self.directions.push_front(i),
+                None => self.directions.push_front(PositionDirection::new(i, position)),
             }
         }
     }
