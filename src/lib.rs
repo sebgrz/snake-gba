@@ -8,12 +8,8 @@ use agb::{input::ButtonController, println};
 
 mod game;
 
-const MAP_WIDTH: u8 = 30;
-const MAP_HEIGHT: u8 = 20;
-
 pub fn main(mut gba: agb::Gba) -> ! {
-    println!("W: {} H: {}", agb::display::WIDTH, agb::display::HEIGHT);
-    let game = game::Game::new();
+    let mut game = game::Game::new();
     let mut input = ButtonController::new();
     loop {
         input.update();

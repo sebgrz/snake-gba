@@ -1,14 +1,27 @@
 use agb::fixnum::Vector2D;
-use alloc::vec::Vec;
+use alloc::collections::VecDeque;
 
 use super::Direction;
 
-struct BodyPart {
-    direction: Direction,
-    position: Vector2D<u8>,
+pub struct BodyPart {
+    pub direction: Direction,
+    pub position: Vector2D<u8>,
 }
 
-struct Snake {
-    direction: Direction,
-    parts: Vec<BodyPart>,
+pub struct Snake {
+    pub direction: Direction,
+    pub parts: VecDeque<BodyPart>,
+}
+
+impl Snake {
+    pub fn new(start_direction: Direction, start_position: Vector2D<u8>) -> Self {
+        let head = BodyPart {
+            direction: start_direction.clone(),
+            position: start_position,
+        };
+        Self {
+            parts: VecDeque::from([head]),
+            direction: start_direction.clone(),
+        }
+    }
 }
