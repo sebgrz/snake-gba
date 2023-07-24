@@ -1,7 +1,11 @@
+use agb::display::object::OamIterator;
 use agb::fixnum::Vector2D;
 use agb::input::{Button, ButtonController};
-use agb::println;
+
 use alloc::collections::VecDeque;
+
+
+use crate::sprite::SpriteCache;
 
 use self::snake::Snake;
 
@@ -38,16 +42,17 @@ pub struct Game {
     pub directions: VecDeque<PositionDirection>,
     pub snake: Snake,
     pub current_timer: i32,
+    pub sprite_ctrl: SpriteCache,
 }
 
 impl Game {
-    pub fn new() -> Self {
+    pub fn new(sprite_ctrl: SpriteCache) -> Self {
         let start_position = Vector2D::new(MAP_WIDTH / 2, MAP_HEIGHT / 2);
-
         Self {
             directions: VecDeque::new(),
-            snake: Snake::new(Direction::RIGHT, start_position), // TODO: random
+            snake: Snake::new(Direction::RIGHT, start_position, &sprite_ctrl), // TODO: random
             current_timer: -1,
+            sprite_ctrl,
         }
     }
 
@@ -64,11 +69,14 @@ impl Game {
         if delta_time > 30 { // 30 FPS = 0.5 sec
             self.snake.update(&self.directions);
         }
-        self.snake.render();
 
         if delta_time > 30 {
             self.current_timer = timer;
         }
+    }
+
+    pub fn render(&mut self, oam: &mut OamIterator) {
+        self.snake.render(oam);
     }
 
     fn add_direction_on_map(
