@@ -67,7 +67,7 @@ impl Game {
             self.snake.direction = i.clone();
         }
         if delta_time > 30 { // 30 FPS = 0.5 sec
-            self.snake.update(&self.directions);
+            self.snake.update(&mut self.directions);
         }
 
         if delta_time > 30 {

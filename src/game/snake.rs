@@ -54,14 +54,24 @@ impl Snake {
         self.parts.front().unwrap().borrow().position
     }
 
-    pub fn update(&mut self, map_directions: &VecDeque<PositionDirection>) {
+    pub fn update(&mut self, map_directions: &mut VecDeque<PositionDirection>) {
         // println!("map_directions: {:?}", map_directions);
         // Update direction of parts
-        for part in self.parts.iter_mut() {
+        let parts = &mut self.parts;
+        for (i, part) in parts.clone().iter_mut().enumerate() {
             map_directions
                 .iter()
-                .filter(|m| part.borrow_mut().position == m.position)
+                .filter(|m| part.borrow().position == m.position)
                 .for_each(|f| part.borrow_mut().direction = f.direction.clone());
+
+            // Remove last map direction - if snake tail touch it
+            if i == parts.len() - 1 {
+                if let Some(b) = parts.back() {
+                    if part.borrow().position == b.borrow().position {
+                        map_directions.pop_back();
+                    }
+                }
+            }
 
             // Update position
             let borrow_part = &mut part.borrow_mut();
