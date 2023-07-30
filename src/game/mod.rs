@@ -70,8 +70,9 @@ impl Game {
         if let Some(i) = direction {
             self.snake.direction = i.clone();
         }
-        if delta_time > 30 {
-            // 30 FPS = 0.5 sec
+
+        if delta_time > 30 { // 30 FPS = 0.5 sec
+            self.eat_apple();
             self.snake.update(&mut self.directions);
         }
 
@@ -82,6 +83,7 @@ impl Game {
         if let None = self.apple {
             self.apple = Some(self.create_apple());
         }
+
     }
 
     pub fn render(&mut self, oam: &mut OamIterator) {
@@ -99,6 +101,15 @@ impl Game {
             println!("Apple pos: {:?} {}", apple_position, agb::rng::gen() as u8);
             if !self.snake.is_snake(&apple_position) {
                 return Apple::new(apple_position, &self.sprite_ctrl);
+            }
+        }
+    }
+
+    fn eat_apple(&mut self) {
+        if let Some(apple) = &self.apple {
+            if self.snake.get_position() == apple.position {
+                self.snake.grow(&self.sprite_ctrl);
+                self.apple = None;
             }
         }
     }

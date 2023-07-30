@@ -7,13 +7,14 @@ use agb::{
     hash_map::HashMap,
 };
 
-use crate::{SNAKE_HEAD, APPLE};
+use crate::{SNAKE_HEAD, APPLE, SNAKE_TAIL, SNAKE_BODY};
 
 #[derive(PartialEq, Eq, Hash)]
 pub enum SpriteType {
     APPLE,
     HEAD,
-
+    TAIL,
+    BODY
 }
 
 pub struct SpriteCache {
@@ -26,6 +27,14 @@ impl SpriteCache {
         map.insert(
             SpriteType::HEAD,
             sprite_loader.get_vram_sprite(SNAKE_HEAD.sprite(0)),
+        );
+        map.insert(
+            SpriteType::TAIL,
+            sprite_loader.get_vram_sprite(SNAKE_TAIL.sprite(0)),
+        );
+        map.insert(
+            SpriteType::BODY,
+            sprite_loader.get_vram_sprite(SNAKE_BODY.sprite(0)),
         );
         map.insert(
             SpriteType::APPLE,
