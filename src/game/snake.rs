@@ -1,11 +1,10 @@
-use core::cell::RefCell;
+
 
 use agb::{
     display::object::{OamIterator, ObjectUnmanaged},
     fixnum::Vector2D,
-    println,
 };
-use alloc::{collections::VecDeque, rc::Rc};
+use alloc::{collections::VecDeque};
 
 use crate::sprite::{SpriteCache, SpriteType};
 
@@ -48,7 +47,7 @@ impl BodyPart {
 pub struct Snake {
     pub speed: f32,
     pub direction: Direction,
-    pub parts: VecDeque<Rc<RefCell<BodyPart>>>,
+    pub parts: VecDeque<BodyPart>,
 }
 
 impl Snake {
@@ -65,18 +64,18 @@ impl Snake {
         );
         Self {
             speed: 0.4,
-            parts: VecDeque::from([Rc::new(RefCell::new(head))]),
+            parts: VecDeque::from([head]),
             direction: start_direction.clone(),
         }
     }
 
     pub fn get_position(&self) -> Vector2D<u8> {
-        self.parts.front().unwrap().borrow().position
+        self.parts.front().unwrap().position
     }
 
     pub fn is_snake(&self, position: &Vector2D<u8>) -> bool {
         for part in self.parts.iter() {
-            if part.borrow().position == *position {
+            if part.position == *position {
                 return true;
             }
         }
@@ -86,7 +85,7 @@ impl Snake {
 
     pub fn grow(&mut self, sprite_cache: &SpriteCache) {
         let (direction, new_position) = {
-            let last_part = self.parts.back().unwrap().borrow();
+            let last_part = self.parts.back().unwrap();
             (
                 last_part.direction.clone(),
                 match last_part.direction {
@@ -105,14 +104,10 @@ impl Snake {
             sprite_cache,
         );
         match self.parts.len() {
-            1 => self.parts.push_back(Rc::new(RefCell::new(new_part))),
+            1 => self.parts.push_back(new_part),
             _ => {
-                self.parts
-                    .back()
-                    .unwrap()
-                    .borrow_mut()
-                    .change_sprite(SpriteType::BODY, sprite_cache);
-                self.parts.push_back(Rc::new(RefCell::new(new_part)));
+                self.parts.back_mut().unwrap().change_sprite(SpriteType::BODY, sprite_cache);
+                self.parts.push_back(new_part);
             }
         };
     }
@@ -120,39 +115,36 @@ impl Snake {
     pub fn update(&mut self, map_directions: &mut VecDeque<PositionDirection>) {
         // println!("map_directions: {:?}", map_directions);
         // Update direction of parts
-        let parts = &mut self.parts;
-        for (i, part) in parts.clone().iter_mut().enumerate() {
+        let parts_len = self.parts.len();
+        for (i, part) in self.parts.iter_mut().enumerate() {
             map_directions
                 .iter()
-                .filter(|m| part.borrow().position == m.position)
-                .for_each(|f| part.borrow_mut().direction = f.direction.clone());
+                .filter(|m| part.position == m.position)
+                .for_each(|f| part.direction = f.direction.clone());
 
             // Remove last map direction - if snake tail touch it
-            if i == parts.len() - 1 {
+            if i == parts_len - 1 {
                 if let Some(last_map_direction) = map_directions.back() {
-                    if part.borrow().position == last_map_direction.position {
+                    if part.position == last_map_direction.position {
                         map_directions.pop_back();
                     }
                 }
             }
 
             // Update position
-            let borrow_part = &mut part.borrow_mut();
-            borrow_part.position = match borrow_part.direction {
-                Direction::UP => borrow_part.position - Vector2D::new(0, 1),
-                Direction::DOWN => borrow_part.position + Vector2D::new(0, 1),
-                Direction::LEFT => borrow_part.position - Vector2D::new(1, 0),
-                Direction::RIGHT => borrow_part.position + Vector2D::new(1, 0),
+            part.position = match part.direction {
+                Direction::UP => part.position - Vector2D::new(0, 1),
+                Direction::DOWN => part.position + Vector2D::new(0, 1),
+                Direction::LEFT => part.position - Vector2D::new(1, 0),
+                Direction::RIGHT => part.position + Vector2D::new(1, 0),
             };
-
-            borrow_part.update();
+            part.update();
         }
     }
 
     pub fn render(&mut self, oam: &mut OamIterator) {
         for part in self.parts.iter_mut() {
-            let mut borrow_part = part.borrow_mut();
-            oam.next().unwrap().set(&borrow_part.sprite_obj.show());
+            oam.next().unwrap().set(&part.sprite_obj.show());
         }
     }
 }
