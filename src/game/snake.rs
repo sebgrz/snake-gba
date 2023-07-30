@@ -54,6 +54,16 @@ impl Snake {
         self.parts.front().unwrap().borrow().position
     }
 
+    pub fn is_snake(&self, position: &Vector2D<u8>) -> bool {
+        for part in self.parts.iter() {
+            if part.borrow().position == *position {
+                return true;
+            }
+        }
+
+        false
+    }
+
     pub fn update(&mut self, map_directions: &mut VecDeque<PositionDirection>) {
         // println!("map_directions: {:?}", map_directions);
         // Update direction of parts

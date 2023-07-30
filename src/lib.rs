@@ -21,6 +21,7 @@ mod game;
 mod sprite;
 
 const SPRITES: &Graphics = include_aseprite!("gfx/snake.aseprite");
+const APPLE: &Tag = SPRITES.tags().get("Apple");
 const SNAKE_HEAD: &Tag = SPRITES.tags().get("Head");
 const SNAKE_TAIL: &Tag = SPRITES.tags().get("Tail");
 const SNAKE_BODY: &Tag = SPRITES.tags().get("Body");
